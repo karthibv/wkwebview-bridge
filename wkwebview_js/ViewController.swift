@@ -13,13 +13,17 @@ class ViewController: UIViewController  , WKScriptMessageHandler{
     
     
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if message.name == "loginAction" {
-            print("Javascript is sending message \(message.body)")
-            let alertMsg = UIAlertController(title: "WKWebView Msg", message: message.body as! String, preferredStyle: .alert)
-            
-            alertMsg.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-            self.present(alertMsg,animated: true)
-            
+        print("User message got")
+        if let theBody = message.body as? [String: Any] {
+            if let guid = theBody["guid"] as? String {
+                print("guid of the promise is " + guid)
+                if let message = theBody["message"] as? String {
+                    print("message of the promise is " + message)
+                    if message == "getCurrencyList" {
+                        fetchCurrencyList(guid: guid)
+                    }
+                }
+            }
         }
     }
     
@@ -29,8 +33,8 @@ class ViewController: UIViewController  , WKScriptMessageHandler{
         let contentController = WKUserContentController()
         let userScript = WKUserScript(source: "mobileHeader()", injectionTime: WKUserScriptInjectionTime.atDocumentEnd, forMainFrameOnly: true)
         
-        contentController.addUserScript(userScript)
-        contentController.add(self , name : "loginAction")
+        //contentController.addUserScript(userScript)
+        contentController.add(self , name : "nativeProcess")
         
         let config = WKWebViewConfiguration()
         config.userContentController = contentController
@@ -49,6 +53,54 @@ class ViewController: UIViewController  , WKScriptMessageHandler{
         webView.loadFileURL(html, allowingReadAccessTo: bundleURL)
     }
 
+    
+    //API for currency List
+    func fetchCurrencyList(guid: String){
+        
+        let request = NSMutableURLRequest(url : NSURL(string : "https://openexchangerates.org/api/currencies.json")! as URL, cachePolicy :.useProtocolCachePolicy, timeoutInterval : 10.0)
+        request.httpMethod = "GET"
+        
+        let session = URLSession.shared
+        let dataTask = session.dataTask (with : request as URLRequest , completionHandler : {data,response,error -> Void in
+            if(error != nil){
+                print(error!)
+            }else{
+                _ = response as? HTTPURLResponse
+                let theString = String(data: data!, encoding: .utf8)
+                print(theString!)
+                DispatchQueue.main.async {
+                    self.executeCallBack(guid: guid, data: theString!)
+                }
+            }
+        })
+        dataTask.resume()
+
+    }
+    
+    func executeCallBack(guid: String, data: String) {
+
+        let rsData = data.base64Encoded()
+        let js2:String = "executeCallback('\(guid)','\(rsData!)')"
+
+        print(js2)
+        
+        webView.evaluateJavaScript(js2) {
+            (data, err) in
+            print("Finished calling......")
+        }
+    }
+
 
 }
+
+extension String {
+    //: ### Base64 encoding a string
+    func base64Encoded() -> String? {
+        if let data = self.data(using: .utf8) {
+            return data.base64EncodedString()
+        }
+        return nil
+    }
+}
+
 

@@ -1,32 +1,31 @@
-<!DOCTYPE html>
+
 <html>
     <head>
         <style type="text/css">
             body {
-                padding-top: 40px; 
+                padding-top: 100px; 
             }
         </style>
-        <title>WKWebView WebBridge Demo</title>
+        <script type="text/javascript" src="main.js"></script>
+
+        <title>Currency Converter</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
         <meta charset="UTF-8">
     </head>
-    <body style="background-color: purple;">
-        <h1>WKWebView Bridge Demo</h1>
+    <body style="background-color: blue;">
+        <h1>List of Currencies</h1>
 
         <form class="form-signin" role="form">
                 <div class="form-content">
-
-                    <label for="email" class="form-email">Already an account?</label>
-                    <br />
-                    <input type="email" id="email" class="form-control" placeholder="Email" required autofocus />
-                    <br />
-                    <input type="password" id="password" class="form-control" placeholder="Password" required>
-                    <br />
-
-                    <button class="btn btn-lg btn-primary btn-block" type="button" onClick="sendLoginAction()">
-                        Login
+                    <button class="btn btn-lg btn-primary btn-block" type="button" onClick="fetchCurrencyList()">
+                        Fetch Currency List
                     </button>
+                    
+                </div>
+                
+                <div id="rawData">
                 </div>
         </form>
-        <script type="text/javascript" src="main.js"></script>
     </body>
 </html>
